@@ -1,8 +1,11 @@
 from flask import Flask
+from flask_cors import CORS
+from flask import Blueprint
 from mysql.connector import pooling
 import os
 
 # Blueprint import
+from api import api_bp
 # from routes.home import home_bp
 # from routes.db import db_bp
 
@@ -26,9 +29,9 @@ connection_pool = pooling.MySQLConnectionPool(
 )
 
 app = Flask(__name__)
+CORS(app)
 
-# app.register_blueprint(home_bp)
-# app.register_blueprint(db_bp, url_prefix='/db')
+app.register_blueprint(api_bp)
 
 @app.route('/')
 def home():
