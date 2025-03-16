@@ -14,9 +14,9 @@ services:
     networks:
       - mynetwork
 
-  backend:
-    build: .
-    container_name: flask_app
+  voice_access:
+    build: voice_access/backend/
+    container_name: voice_user
     restart: always
     depends_on:
       - db
@@ -27,6 +27,22 @@ services:
       DB_NAME: test_db
     ports:
       - "8080:5000"
+    networks:
+      - mynetwork
+
+  admin_page:
+    build: admin_page/backend/
+    container_name: voice_admin
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: test_db
+    ports:
+      - "8081:5000"
     networks:
       - mynetwork
 

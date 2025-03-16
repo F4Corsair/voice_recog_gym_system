@@ -1,0 +1,8 @@
+*.pyc
+.git/*
+*.md
+*.yml
+Dockerfile
+.gitignore
+.dockerignore
+nginx.conf

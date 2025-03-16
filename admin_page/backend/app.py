@@ -21,8 +21,8 @@ db_config = {
     "database":DB_NAME
 }
 
-user_api_pool = pooling.MySQLConnectionPool(
-        pool_name="user_api_pool",
+admin_api_pool = pooling.MySQLConnectionPool(
+        pool_name="admin_api_pool",
         pool_size=1,
         **db_config
 )
