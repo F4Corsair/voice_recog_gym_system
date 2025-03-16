@@ -1,13 +1,12 @@
 from flask import Flask
 from flask_cors import CORS
-from flask import Blueprint
+from flask_jwt_extended import JWTManager
 from mysql.connector import pooling
 import os
 
+from config import Config
 # Blueprint import
 from api import api_bp
-# from routes.home import home_bp
-# from routes.db import db_bp
 
 # DB settings
 DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -29,8 +28,12 @@ connection_pool = pooling.MySQLConnectionPool(
 )
 
 app = Flask(__name__)
+app.config.from_object(Config)
 CORS(app)
 
+jwt = JWTManager(app)
+
+# blueprint register
 app.register_blueprint(api_bp)
 
 @app.route('/')
@@ -38,4 +41,4 @@ def home():
     return "Test page"
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=5000)
