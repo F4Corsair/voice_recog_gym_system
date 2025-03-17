@@ -11,34 +11,41 @@ const AudioRecorder = () => {
   let audioChunks: Blob[] = [];
 
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = recorder;
-    isRecordingRef.current = true; // 녹음 시작 시 true로 설정
+    // 브라우저 환경에서만 getUserMedia를 실행하도록 조건을 추가
+    if (typeof window !== "undefined" && navigator.mediaDevices) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      isRecordingRef.current = true; // 녹음 시작 시 true로 설정
 
-    recorder.start();
+      recorder.start();
 
-    recorder.ondataavailable = (event) => {
-      audioChunks.push(event.data);
-    };
+      recorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
 
-    recorder.onstop = async () => {
-      const blob = new Blob(audioChunks, { type: "audio/wav" });
-      setAudioBlob(blob);
-      audioChunks = [];
+      recorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: "audio/wav" });
+        setAudioBlob(blob);
+        audioChunks = [];
 
-      console.log("녹음 완료, 음성 데이터 전송...");
-      await handleSendAudio(blob);
-    };
+        console.log("녹음 완료, 음성 데이터 전송...");
+        await handleSendAudio(blob);
+      };
 
-    setIsRecording(true);
+      setIsRecording(true);
 
-    // 5초 후 자동 종료
-    setTimeout(() => {
-      if (isRecordingRef.current) {
-        stopRecording();
-      }
-    }, 5000);
+      // 5초 후 자동 종료
+      setTimeout(() => {
+        if (isRecordingRef.current) {
+          stopRecording();
+        }
+      }, 5000);
+    } else {
+      console.error("getUserMedia is not supported in this environment.");
+    }
   };
 
   const stopRecording = () => {
