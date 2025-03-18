@@ -100,10 +100,50 @@ def save_user_model(username, audio_file):
     print(f"{username}'s model has been saved at {model_path}.")
 
 
-# 사용자 인증 함수 (RNN 모델 사용)
+# 로그인 인증 함수 (RNN 모델 사용)
+def authenticate_for_login_with_rnn():
+    # 로그인 시도 횟수를 추적하는 변수
+    try:
+        # 기존 로그인 시도 횟수 파일을 불러와 카운트 증가
+        count_file = f"C:\\AI\\audio\\login_count.txt"
+        if os.path.exists(count_file):
+            with open(count_file, 'r') as f:
+                login_count = int(f.read().strip())  # 기존 카운트 값 읽어오기
+        else:
+            login_count = 0  # 첫 로그인 시도인 경우
+    except:
+        login_count = 0
+
+    login_count += 1  # 로그인 시도 횟수 증가
+
+    # 로그인 시도 파일 이름을 생성 (login1.wav, login2.wav, ...)
+    audio_file_to_authenticate = f"C:\\AI\\audio\\login{login_count}.wav"
+
+    print(f"{login_count}번째 로그인 시도 중입니다. 말씀하세요.")
+    record_audio(audio_file_to_authenticate, duration=5)
+
+    # 로그인 시도 횟수 저장
+    with open(count_file, 'w') as f:
+        f.write(str(login_count))  # 로그인 횟수 업데이트
+
+    # 사용자 인증
+    username = authenticate_user_with_rnn(audio_file_to_authenticate)
+
+    if username:
+        print(f"{username}님의 로그인 성공!")
+    else:
+        print("로그인 실패")
+
+
 def authenticate_user_with_rnn(audio_file):
     # 사용자 음성에서 MFCC 특징 추출
     input_features = extract_mfcc_features_from_flac(audio_file)
+
+    # MFCC 특징이 유효한지 확인 (빈 값이나 0으로 채워진 특징 벡터가 있는지 확인)
+    if input_features is None or np.all(input_features == 0):
+        print("유효한 음성 입력이 감지되지 않았습니다.")
+        return None
+
     input_features = input_features.reshape((1, input_features.shape[0], 1))  # (1, 특징 수, 1)
 
     # 모델 경로 확인
@@ -117,43 +157,39 @@ def authenticate_user_with_rnn(audio_file):
 
             # 예측
             prediction = model.predict(input_features)
+            print(f"{user_folder}의 예측 결과: {prediction}")
+
+            # 예측 결과가 0.89 이상이면 로그인 성공으로 처리
             if prediction >= 0.8:
-                print(f"Authentication successful for {user_folder}.")
+                print(f"{user_folder}님의 인증이 성공적으로 완료되었습니다.")
                 return user_folder  # 인증된 사용자 이름 반환
-    print("Authentication failed.")
+
+            elif prediction < 0.7:
+                print(f"{user_folder}님의 인증이 실패하였습니다. 예측값이 너무 낮습니다.")
+                return None
+
+    print("인증 실패")
     return None
 
 
-# 로그인 인증 함수
-def authenticate_for_login_with_rnn():
-    # 사용자가 음성을 말하고 녹음
-    audio_file_to_authenticate = f"C:\\AI\\audio\\login.wav"  # 로그인용 음성 파일 이름
-    print("음성 인식 중입니다. 말씀하세요.")
-    record_audio(audio_file_to_authenticate, duration=7)  # 7초간 녹음
-
-    # 사용자 인증
-    username = authenticate_user_with_rnn(audio_file_to_authenticate)
-
-    if username:
-        print(f"{username}님의 로그인 성공!")
-    else:
-        print("로그인 실패")
-
-
-# 사용자 등록 함수 (RNN 모델 학습)
 def register_user(username):
     audio_folder = f"C:\\AI\\audio\\{username}"
+
+    # Ensure the directory exists
+    if not os.path.exists(audio_folder):
+        os.makedirs(audio_folder)  # Create the directory if it doesn't exist
+
     if os.path.exists(audio_folder):
         print(f"User '{username}' is already registered.")
         return
 
     # 여러 음성 데이터를 사용하여 학습하기
-    audio_files = [f"C:\\AI\\audio\\{username}_register_{i}.flac" for i in range(5)]  # 5개의 음성 파일을 사용
+    audio_files = [f"C:\\AI\\audio\\{username}\\{username}_register_{i+1}.flac" for i in range(5)]  # 5개의 음성 파일을 사용
     print(f"회원가입을 위해 {username}님의 음성을 5번 녹음해주세요.")
 
     features_list = []
     for i, audio_file in enumerate(audio_files):
-        record_audio(audio_file, duration=5)  # 5초간 음성 녹음
+        record_audio(audio_file, duration=7)
         save_user_model(username, audio_file)
         features = extract_mfcc_features_from_flac(audio_file)
         features_list.append(features)
@@ -164,7 +200,7 @@ def register_user(username):
     features = features.reshape((features.shape[0], features.shape[1], 1))  # (샘플 수, 특징 수, 1)
 
     model = create_rnn_model(input_shape=(features.shape[1], 1))
-    model.fit(features, np.array([1] * len(features)))  # 각 음성 파일에 대해 라벨을 1로 설정 (등록됨)
+    model.fit(features, np.array([1] * len(features)), epochs=10)  # 각 음성 파일에 대해 라벨을 1로 설정 (등록됨)
 
     # 모델 저장
     model.save(f"C:\\AI\\models\\{username}\\voice_authentication_model.h5")
