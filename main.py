@@ -155,11 +155,6 @@ def authenticate_for_login_with_rnn(username):
         print(f"User '{username}' is not registered.")
         return
 
-    # 사용자 모델이 이미 등록 됐다면 username 이미 등록 됐다고 반환
-    if os.path.exists(model_folder):
-        print(f"User '{username}' is already registered.")
-        return
-
     # 사용자가 음성을 말하고 녹음
     audio_file_to_authenticate = f"C:\\AI\\audio\\{username}_login.wav"  # 로그인용 음성 파일 이름
     print("말씀하세요. 녹음중입니다.")
