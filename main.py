@@ -101,30 +101,55 @@ def save_user_model(username, audio_file):
 
 
 # 사용자 인증 함수 (RNN 모델 사용)
-def authenticate_user_with_rnn(audio_file, model_path):
+def authenticate_user_with_rnn(audio_file):
     # 사용자 음성에서 MFCC 특징 추출
     input_features = extract_mfcc_features_from_flac(audio_file)
     input_features = input_features.reshape((1, input_features.shape[0], 1))  # (1, 특징 수, 1)
 
-    # 모델 불러오기
-    model = tf.keras.models.load_model(model_path)
+    # 모델 경로 확인
+    model_folder = "C:\\AI\\models"  # 모델들이 저장된 기본 경로
+    for user_folder in os.listdir(model_folder):
+        user_model_path = os.path.join(model_folder, user_folder, 'voice_authentication_model.h5')
 
-    # 예측
-    prediction = model.predict(input_features)
-    if prediction >= 0.8:
-        print("Authentication successful.")
-        return True
+        if os.path.exists(user_model_path):  # 사용자 모델이 존재하는지 확인
+            # RNN 모델 불러오기
+            model = tf.keras.models.load_model(user_model_path)
+
+            # 예측
+            prediction = model.predict(input_features)
+            if prediction >= 0.8:
+                print(f"Authentication successful for {user_folder}.")
+                return user_folder  # 인증된 사용자 이름 반환
+    print("Authentication failed.")
+    return None
+
+
+# 로그인 인증 함수
+def authenticate_for_login_with_rnn():
+    # 사용자가 음성을 말하고 녹음
+    audio_file_to_authenticate = f"C:\\AI\\audio\\login.wav"  # 로그인용 음성 파일 이름
+    print("음성 인식 중입니다. 말씀하세요.")
+    record_audio(audio_file_to_authenticate, duration=7)  # 7초간 녹음
+
+    # 사용자 인증
+    username = authenticate_user_with_rnn(audio_file_to_authenticate)
+
+    if username:
+        print(f"{username}님의 로그인 성공!")
     else:
-        print("Authentication failed.")
-        return False
+        print("로그인 실패")
 
 
 # 사용자 등록 함수 (RNN 모델 학습)
-# 모델 학습에 사용할 데이터 수를 늘리는 예시
 def register_user(username):
+    audio_folder = f"C:\\AI\\audio\\{username}"
+    if os.path.exists(audio_folder):
+        print(f"User '{username}' is already registered.")
+        return
+
     # 여러 음성 데이터를 사용하여 학습하기
     audio_files = [f"C:\\AI\\audio\\{username}_register_{i}.flac" for i in range(5)]  # 5개의 음성 파일을 사용
-    print(f"회원가입을 위해 {username}님의 음성을 여러 번 녹음해주세요.")
+    print(f"회원가입을 위해 {username}님의 음성을 5번 녹음해주세요.")
 
     features_list = []
     for i, audio_file in enumerate(audio_files):
@@ -146,25 +171,6 @@ def register_user(username):
     print(f"{username}님의 음성 모델이 학습되어 저장되었습니다.\n")
 
 
-# 로그인 인증 함수
-def authenticate_for_login_with_rnn(username):
-    model_folder = f"C:\\AI\\models\\{username}"
-
-    # 사용자 모델이 등록되지 않았다면 로그인 실패
-    if not os.path.exists(model_folder):
-        print(f"User '{username}' is not registered.")
-        return
-
-    # 사용자가 음성을 말하고 녹음
-    audio_file_to_authenticate = f"C:\\AI\\audio\\{username}_login.wav"  # 로그인용 음성 파일 이름
-    print("말씀하세요. 녹음중입니다.")
-    record_audio(audio_file_to_authenticate, duration=7)  # 5초간 녹음
-
-    # RNN 모델 경로
-    rnn_model_path = os.path.join(model_folder, 'voice_authentication_model.h5')  # 저장된 RNN 모델 파일
-    authenticate_user_with_rnn(audio_file_to_authenticate, rnn_model_path)
-
-
 # 메인 메뉴
 def main():
     while True:
@@ -175,8 +181,7 @@ def main():
         choice = input("선택 (1/2/0): ")
 
         if choice == '1':
-            username = input("로그인할 사용자 이름을 입력하세요: ")
-            authenticate_for_login_with_rnn(username)  # 로그인 시도
+            authenticate_for_login_with_rnn()  # 로그인 시도
 
         elif choice == '2':
             username = input("회원가입할 사용자 이름을 입력하세요: ")
