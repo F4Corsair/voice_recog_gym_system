@@ -7,7 +7,7 @@ import axios, {
 export const queryClient = new QueryClient();
 
 export const http = axios.create({
-  baseURL: "https://api.example.com",
+  baseURL: "http://localhost:8080",
   headers: {
     "Content-Type": "application/json",
   },
