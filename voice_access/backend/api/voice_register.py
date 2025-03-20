@@ -18,7 +18,7 @@ def ai_task(uid):
     return
 
 @api_bp.route("/voice_register/upload", methods=["POST"])
-def upload_voice():
+def register_upload_voice():
     if "file" not in request.files:
         return jsonify({"error": "File not found"}), 400
     

@@ -13,7 +13,7 @@ def allowed_file(fname):
     return "." in fname and fname.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @api_bp.route("/voice_auth/upload", methods=["POST"])
-def upload_voice():
+def auth_upload_voice():
     if "file" not in request.files:
         return jsonify({"error": "File not found"}), 400
     
@@ -24,7 +24,8 @@ def upload_voice():
     
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file_id = str(uuid.uudi4(), filename) # 고유 id 생성
+        file_id = str(uuid.uuid4()) # 고유 id 생성
+        # file_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, filename)) # file hash 생성
         file_path = os.path.join(UPLOAD_PATH, file_id)
 
         file.save(file_path)
