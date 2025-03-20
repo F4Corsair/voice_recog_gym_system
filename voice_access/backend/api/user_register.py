@@ -65,6 +65,6 @@ def register():
         weight=data.get("weight"),
     )
     
-    # TODO DB access
+    # TODO DB access to save data
     
     return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201

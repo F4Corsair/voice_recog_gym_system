@@ -65,14 +65,17 @@ curl -X GET http://localhost:5000/api/voice_auth/result \
 * 이름, 전화번호, 성별, 키, 몸무게
 ```
 curl -X POST http://localhost:5000/api/user_register \
-     -F "name=홍길동" \
-     -F "phone=010-1234-5678"
-     -F "gender=male"
-     -F "height=180"
-     -F "weight=70"
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "홍길동",
+           "phone": "010-1234-5678",
+           "gender": "male",
+           "height": 175.5,
+           "weight": 68.2
+         }'
 
 {"error": "error 사유"}
-{"message": "User registered successfully", "user": "유저정보 딕셔너리"}
+{"message":"User registered successfully","user":{"gender":"male","height":175.5,"name":"\ud64d\uae38\ub3d9","phone":"010-1234-5678","weight":68.2}}
 ```
 * 이름 50자 이하
 * 전화번호는 dash 없는 형태
@@ -88,7 +91,7 @@ curl -X POST http://localhost:5000/api/user_register \
 ```
 curl -X POST http://localhost:5000/api/voice_register/upload \
      -F "file=@sample.wav" \
-     -F "uid=12345"
+     -F "uid=12345" \
      -F "count=3"
 
 {"error": "Uploaded file not found"}
@@ -118,7 +121,8 @@ curl -X GET http://localhost:5000/api/voice_register/status \
 
 # DB 요구사항
 * 유저정보
-     * 이름(50자 이하), 전번(대쉬포함 13자 이하), 성별(male/female), 키(3자리 이하), 몸무게(3자리 이하)
+     * 이름(50자 이하), 전번(대쉬포함 13자 이하), 성별(male/female), 키(3자리 이하 실수), 몸무게(3자리 이하 실수)
+          * 실수 -> 소수점 이하 1자리
      * 등록날짜, 최종 업데이트 날짜
      * PK 지정이 필요 - 전화번호 등의 식별자에 대응하는 uid 생성이 필요
           * API 요청에 uid 통한 접근 예정
