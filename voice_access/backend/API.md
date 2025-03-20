@@ -95,28 +95,25 @@ curl -X POST http://localhost:5000/api/voice_register/upload \
      -F "count=3"
 
 {"error": "Uploaded file not found"}
-{
-  "message": "File uploaded successfully",
-  "count": "3"
-}
+{"count":3,"message":"File upload successful"}
 
 ```
 
 * 음성 등록 후 AI 처리 요청
 ```
 curl -X POST http://localhost:5000/api/voice_register/call \
-     -F "uid=1234"
+     -F "uid=12345"
 
 {"error": "Uploaded file not found"}
-{"uid": 1234, "status": "processing"}
+{"status":"processing","uid":"12345"}
 ```
 * AI 처리결과 조회
 ```
 curl -X GET http://localhost:5000/api/voice_register/status \
-     -F "uid=1234"
+     -F "uid=12345"
 
 {"error": "No ID provided"}
-{"uid": 1234, "result": False}
+{"result":false,"uid":"12345"}
 ```
 
 # DB 요구사항

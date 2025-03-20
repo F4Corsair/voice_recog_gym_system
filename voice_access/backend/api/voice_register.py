@@ -41,7 +41,7 @@ def register_upload_voice():
     if count < 1 or count > 5:
         return jsonify({"error": "Count out of range", "count": count}), 400
 
-    file_path = os.path.join(UPLOAD_PATH, uid + "_" + count)
+    file_path = os.path.join(UPLOAD_PATH, uid + "_" + str(count))
 
     file.save(file_path)
 
@@ -55,8 +55,9 @@ def register_voice():
         return jsonify({"error": "No ID provided"}), 400
     
     for count in range(1, 6):
-        file_path = os.path.join(UPLOAD_PATH, uid + "_" + count)
-        if not file_path.exists():
+        file_path = os.path.join(UPLOAD_PATH, uid + "_" + str(count))
+
+        if not os.path.exists(file_path):
             return jsonify({"error": "Uploaded file not found"}), 400
         
     thread = Thread(target=ai_task, args=(uid,))
@@ -65,7 +66,7 @@ def register_voice():
     return jsonify({"uid": uid, "status": "processing"}), 202
 
 @api_bp.route("/voice_register/status")
-def check_register_status(uid):
+def check_register_status():
     result = False
 
     uid = request.form.get("uid")
