@@ -1,77 +1,70 @@
 from flask import jsonify, request
-from threading import Thread
 from . import api_bp
-import os
+import re
+from datetime import datetime
+from models.user import User
 
-# 유저 기본정보 등록 후 음성 5회 등록 ('고유 id + 회수'로 파일 구분)
 
-UPLOAD_PATH = "uploads/register"
-ALLOWED_EXTENSIONS = {"wav"}
+def validate_user(data):
+    try:
+        name=data.get("name")
+        phone=data.get("phone")
+        gender=data.get("gender")
+        height=data.get("height")
+        weight=data.get("weight")
 
-os.makedirs(UPLOAD_PATH, exist_ok=True)
+        # name (eq or less than 50)
+        if not isinstance(name, str) or len(name) > 50:
+            return "Invalid name"
 
-def allowed_file(fname):
-    return "." in fname and fname.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+        # phone (digit 10~13)
+        if not re.match(r"^0\d{1,2}-\d{3,4}-\d{4}$", phone):
+            return "Invalid phone number"
 
-def ai_task(uid):
-    # 작업 후, 결과 DB에 저장
-    return
+        # gender (male / female)
+        if gender not in ["male", "female"]:
+            return "Invalid gender (male or female expected)"
 
-@api_bp.route("/voice_register/upload", methods=["POST"])
-def upload_voice():
-    if "file" not in request.files:
-        return jsonify({"error": "File not found"}), 400
+        # height
+        if height is not None:
+            try:
+                height = float(height)
+                if height <= 0 or height > 999:
+                    return "Invalid height"
+            except ValueError:
+                return "Invalid height (must be a number)"
+
+        # weight
+        if weight is not None:
+            try:
+                weight = float(weight)
+                if weight <= 0 or weight > 999:
+                    return "Invalid weight"
+            except ValueError:
+                return "Invalid weight (must be a number)"
+
+        return None
+    except KeyError as e:
+        return f"Missing field: {str(e)}"
     
-    file = request.files["file"]
+# user register
+@api_bp.route("/user_register", methods=["POST"])
+def register():
+    data = request.json
 
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+    error = validate_user(data)
+    if error:
+        return jsonify({"error": error}), 400
+
+    # create user
+    new_user = User(
+        name=data.get("name"),
+        phone=data.get("phone"),
+        gender=data.get("gender"),
+        height=data.get("height"),
+        weight=data.get("weight"),
+    )
     
-    if not allowed_file(file.filename):
-        return jsonify({"error": "Invalid file type"}), 400
-
-    uid = request.form.get("uid")
-    if not uid:
-        return jsonify({"error": "No ID provided"}), 400
+    # TODO DB access
     
-    count = request.form.get("count")
-    if not count:
-        return jsonify({"error": "No count provided"}), 400
-    count = int(count)
-    if count < 1 or count > 5:
-        return jsonify({"error": "Count out of range", "count": count}), 400
-
-    file_path = os.path.join(UPLOAD_PATH, uid + "_" + count)
-
-    file.save(file_path)
-
-    return jsonify({"message": "File upload successful", "count": count}), 201
-    
-# api/voice_register_upload 5회 수행 후 호출
-@api_bp.route("/voice_register/call", methods=["POST"])
-def register_voice():
-    uid = request.form.get("uid")
-    if not uid:
-        return jsonify({"error": "No ID provided"}), 400
-    
-    for count in range(1, 6):
-        file_path = os.path.join(UPLOAD_PATH, uid + "_" + count)
-        if not file_path.exists():
-            return jsonify({"error": "Uploaded file not found"}), 400
-        
-    thread = Thread(target=ai_task, args=(uid,))
-    thread.start()
-
-    return jsonify({"uid": uid, "status": "processing"}), 202
-
-@api_bp.route("/voice_register/status")
-def check_register_status(uid):
-    result = False
-
-    uid = request.form.get("uid")
-    if not uid:
-        return jsonify({"error": "No ID provided"}), 400
-
-    # DB에 음성 처리 여부 조회
-
-    return jsonify({"uid": uid, "result": result})
+    return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201

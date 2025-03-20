@@ -1,4 +1,6 @@
 # API info
+
+### Deprecated
 ```bash
 # GET
 curl -X GET http://localhost:5000/api/get
@@ -58,11 +60,33 @@ curl -X GET http://localhost:5000/api/voice_auth/result \
 }
 ```
 
-### 유저등록
+### 유저 등록
+* 음성 등록 이전에 수행하는 작업
+* 이름, 전화번호, 성별, 키, 몸무게
+```
+curl -X POST http://localhost:5000/api/user_register \
+     -F "name=홍길동" \
+     -F "phone=010-1234-5678"
+     -F "gender=male"
+     -F "height=180"
+     -F "weight=70"
+
+{"error": "error 사유"}
+{"message": "User registered successfully", "user": "유저정보 딕셔너리"}
+```
+* 이름 50자 이하
+* 전화번호는 dash 없는 형태
+     * regex : "^0\d{1,2}-\d{3,4}-\d{4}$"
+     * dash 필수
+* 성별은 male 또는 female
+* 키와 몸무게는 1~999
+
+### 음성 등록
+* 유저 정보 등록이 반드시 선행되어야 함
 * 등록할 음성 업로드 (5회 수행)
      * count는 1 ~ 5
 ```
-curl -X POST http://localhost:5000/api/voice_register/upload\
+curl -X POST http://localhost:5000/api/voice_register/upload \
      -F "file=@sample.wav" \
      -F "uid=12345"
      -F "count=3"
@@ -91,3 +115,21 @@ curl -X GET http://localhost:5000/api/voice_register/status \
 {"error": "No ID provided"}
 {"uid": 1234, "result": False}
 ```
+
+# DB 요구사항
+* 유저정보
+     * 이름(50자 이하), 전번(대쉬포함 13자 이하), 성별(male/female), 키(3자리 이하), 몸무게(3자리 이하)
+     * 등록날짜, 최종 업데이트 날짜
+     * PK 지정이 필요 - 전화번호 등의 식별자에 대응하는 uid 생성이 필요
+          * API 요청에 uid 통한 접근 예정
+* 출입기록 로그
+     * 유저 식별자, 입장/퇴장 여부, 시간, log_id
+* 관리자 정보
+     * 관리자 이름, 관리자 비번
+
+## 추가 DB 요구사항
+* ai 음성등록 과정 저장용
+     * uid(FK, PK), 등록시간, 상태(True, False)
+     * 재등록시 uid에 해당하는 기록 삭제할 필요도 존재
+* ai 음성인증 대기열
+     * uuid(PK, 16Byte), uid(FK), 등록시간, 상태(True, False)

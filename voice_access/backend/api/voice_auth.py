@@ -24,8 +24,8 @@ def upload_voice():
     
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file_id = str(uuid.uudi4()) # 고유 id 생성
-        file_path = os.path.join(UPLOAD_PATH, file_id + "_" + filename)
+        file_id = str(uuid.uudi4(), filename) # 고유 id 생성
+        file_path = os.path.join(UPLOAD_PATH, file_id)
 
         file.save(file_path)
 
