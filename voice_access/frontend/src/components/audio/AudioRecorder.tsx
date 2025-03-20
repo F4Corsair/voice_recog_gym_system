@@ -2,14 +2,27 @@ import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 import { sendAudioToBackend } from "@/lib/utils";
 
-const AudioRecorder = () => {
+const AudioRecorder = ({
+  onFileReady,
+}: {
+  onFileReady: (file: File) => void;
+}) => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null); // mediaRecorder의 상태를 추적하는 ref
   const isRecordingRef = useRef<boolean>(false); // 녹음 상태를 추적하는 ref
 
   let audioChunks: Blob[] = [];
-
+  // const handleRecordingComplete = (audioBlob: Blob) => {
+  //   const file = new File([audioBlob], "recording.wav", { type: "audio/wav" });
+  //   onFileReady(file); // 부모 컴포넌트에 전달
+  // };
+  const handleRecordingComplete = (audioBlob: Blob) => {
+    const file = new File([audioBlob], "recording.wav", {
+      type: "audio/wav",
+    });
+    onFileReady(file); // 부모 컴포넌트에 전달
+  };
   const startRecording = async () => {
     // 브라우저 환경에서만 getUserMedia를 실행하도록 조건을 추가
     if (typeof window !== "undefined" && navigator.mediaDevices) {
@@ -60,6 +73,7 @@ const AudioRecorder = () => {
     try {
       const response = await sendAudioToBackend(blob);
       console.log("Authentication Result:", response);
+      handleRecordingComplete(blob);
     } catch (error) {
       console.error("Failed to send audio:", error);
     }
