@@ -1,5 +1,5 @@
-import { SignUpForm } from "@/components/signup/SignUpForm";
 import MainPage from "@/pages/MainPage";
+import SignUpPage from "@/pages/SignUpPage";
 import { createBrowserRouter } from "react-router-dom";
 
 export const router = createBrowserRouter([
@@ -12,7 +12,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "signup",
-        element: <SignUpForm />,
+        element: <SignUpPage />,
       },
     ],
   },
