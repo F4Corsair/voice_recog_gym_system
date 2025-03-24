@@ -16,3 +16,15 @@ create table users(
 
 -- convert table to accept korean
 ALTER TABLE users CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+
+-- create login log table
+create table user_login_logs(
+    order_id int auto_increment,
+    name varchar(8) not null,
+    entrance_time time,
+    leaving_time time,
+    primary key (order_id, name)
+);
+
+-- convert table to accept korean
+ALTER TABLE user_login_logs CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
