@@ -11,6 +11,8 @@ create table users(
 	height float,
 	weight float,
 	voice varchar(200),
+	create_time time,
+	modify_time time,
 	unique (phone_num)
 );
 
