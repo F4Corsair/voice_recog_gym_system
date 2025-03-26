@@ -3,3 +3,12 @@ mysql-connector-python
 gunicorn
 flask-cors
 Flask-JWT-Extended
+
+librosa
+numpy
+pyaudio
+tensorflow
+tensorflow_hub
+keras
+soundfile
+noisereduce
