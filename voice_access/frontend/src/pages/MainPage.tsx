@@ -17,7 +17,10 @@ const MainPage = () => {
           formData.append("audio", file);
         }}
       />
-      <Button variant={"default"} onClick={() => handleAudioFile(formData)}>
+      <Button
+        onClick={() => handleAudioFile(formData)}
+        className="bg-emerald-400"
+      >
         로그인
       </Button>
       <Button variant={"link"}>

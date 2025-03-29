@@ -58,7 +58,11 @@ const AudioRecorder = ({
 
   return (
     <div className="space-y-2">
-      <Button onClick={startRecording} disabled={isRecording}>
+      <Button
+        onClick={startRecording}
+        disabled={isRecording}
+        className="bg-blue-500"
+      >
         녹음 시작
       </Button>
       {isRecording && <p>녹음 중... (5초 후 자동 종료)</p>}

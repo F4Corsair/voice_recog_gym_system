@@ -24,7 +24,12 @@ export const sendAudioToBackendForSignUp = async (formData: FormData) => {
   const response = await http.post("api/signup", formData, {
     headers: { "Content-Type": "multipart/form-data" }, // 요청마다 헤더 변경
   });
-  return response.data;
+  if (response.status == 200) {
+    alert("회원가입 성공!");
+    return response.data;
+  } else {
+    alert("회원가입 실패");
+  }
 };
 
 // 음성 파일 전송용 함수(로그인)
@@ -33,5 +38,10 @@ export const sendAudioToBackendForLogin = async (formData: FormData) => {
   const response = await http.post("api/login", formData, {
     headers: { "Content-Type": "multipart/form-data" }, // 요청마다 헤더 변경
   });
-  return response.data;
+  if (response.status == 200) {
+    alert(response.data);
+    return response.data;
+  } else {
+    alert("로그인 실패");
+  }
 };
