@@ -1,0 +1,1 @@
+ /Users/soroso/Dev/voice_recog_gym_system/voice_access/app/.dart_tool/flutter_build/e5bfdcf5608da0e05ffb580642c92fa1/native_assets.yaml: 
